@@ -45,8 +45,9 @@ try {
   const EXEC_LINE = /@framer\/agent\S*\s+exec\b/;
   const findFiles = (text) => {
     const execFeeds = new Set(), runners = new Set();
-    // Scripts fed to the Framer agent: only on lines that invoke `exec`, so `<id>` in a script's comments is not a redirect.
-    for (const line of text.split('\n')) {
+    // Scripts fed to the Framer agent: only in shell segments that invoke `exec`, so `<id>` in a script's comments
+    // and a `</dev/null` on a neighbouring command are not taken for the exec's input.
+    for (const line of text.split(/\n|;|&&|\|\|/)) {
       if (!EXEC_LINE.test(line)) continue;
       for (const m of line.matchAll(new RegExp(`(?<![<>])<(?![<>&])(?!\\s*[^\\s"'|;&<>]+>)\\s*${PATH}`, 'g'))) execFeeds.add(m[1]);   // < file (not a heredoc, not an <angle> placeholder)
       for (const m of line.matchAll(new RegExp(`\\bcat\\s+${PATH}\\s*\\|\\s*[^|;]*?@framer\\/agent\\S*\\s+exec\\b`, 'g'))) execFeeds.add(m[1]);   // cat file | … exec (only a pipe into exec)
@@ -62,7 +63,7 @@ try {
     const { execFeeds, runners } = findFiles(frontier);
     let appended = '';
     for (const f of execFeeds) {
-      if (seen.has(f)) continue; seen.add(f);
+      if (seen.has(f) || f === '/dev/null') continue; seen.add(f);
       const body = readFile(f);
       // Fail closed only for what the command itself feeds; a usage line inside a fetched script is informational.
       if (body === null) { if (round === 0) unreadableExecFeeds.push(f); } else appended += `\n/* ${f} */\n${body}`;
@@ -86,14 +87,17 @@ try {
     if (unreadableExecFeeds.length) {
       deny(`Blocked by the azmx-site plugin: the Framer agent would run a script the guard cannot read (${unreadableExecFeeds.join(', ')}). Run it from the website repository root with a path the guard can resolve, or paste the script in a quoted heredoc.`);
     }
-    // A pipe into exec from anything but `cat <readable file>`.
-    for (const seg of original.split(/\n/)) {
+    // A pipe into exec from anything but `cat <readable file>`. Quoted strings are blanked first (a `|` inside a
+    // JavaScript regex passed with -e is not a shell pipe), and each shell segment is judged on its own.
+    const blankQuotes = (s) => s.replace(/'[^']*'|"(?:[^"\\]|\\.)*"/g, '""');
+    for (const seg of blankQuotes(original).split(/\n|&&|\|\||;/)) {
       const m = seg.match(/^(.*?)\|\s*(?:[^|]*?@framer\/agent\S*\s+exec\b)/);
       if (m && !/^\s*cat\s+["']?[^\s"'|;&<>]+["']?\s*$/.test(m[1])) {
         deny('Blocked by the azmx-site plugin: a Framer agent exec fed through a pipe the guard cannot inspect. Feed scripts with `< file` or a quoted heredoc.');
       }
     }
-    const execSegments = original.split(/\n|&&|\|\||;/).filter(s => execCmd.test(s));
+    // Command substitution inside the exec command (single-quoted text is literal to the shell; double-quoted is not).
+    const execSegments = original.replace(/'[^']*'/g, "''").split(/\n|&&|\|\||;/).filter(s => execCmd.test(s));
     if (execSegments.some(s => /\$\(|`/.test(s))) {
       deny('Blocked by the azmx-site plugin: command substitution inside a Framer agent exec hides the code from the guard. Write the script out or feed it from a file.');
     }
