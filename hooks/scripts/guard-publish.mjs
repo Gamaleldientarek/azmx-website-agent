@@ -49,7 +49,7 @@ try {
     for (const line of text.split('\n')) {
       if (!EXEC_LINE.test(line)) continue;
       for (const m of line.matchAll(new RegExp(`(?<![<>])<(?![<>&])(?!\\s*[^\\s"'|;&<>]+>)\\s*${PATH}`, 'g'))) execFeeds.add(m[1]);   // < file (not a heredoc, not an <angle> placeholder)
-      for (const m of line.matchAll(new RegExp(`\\bcat\\s+${PATH}\\s*\\|`, 'g'))) execFeeds.add(m[1]);                   // cat file |
+      for (const m of line.matchAll(new RegExp(`\\bcat\\s+${PATH}\\s*\\|\\s*[^|;]*?@framer\\/agent\\S*\\s+exec\\b`, 'g'))) execFeeds.add(m[1]);   // cat file | … exec (only a pipe into exec)
       for (const m of line.matchAll(new RegExp(`(?:^|\\s)(?:--file|-f)(?:=|\\s+)${PATH}`, 'g'))) execFeeds.add(m[1]);    // -f file, --file=file
     }
     // Local scripts the shell runs directly (one level at a time).

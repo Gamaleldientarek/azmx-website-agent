@@ -57,6 +57,7 @@ const cases = [
   // publish guard: pass (no output)
   ['pass', bash('npx @framer/agent@latest exec -s 1 -e "console.log(await framer.agent.getActiveBranch())"')],
   ['pass', bash('npx -y @framer/agent@latest exec -s 1 < read.js')],
+  ['pass', bash('cat notes.txt | head -3; npx -y @framer/agent@latest exec -s 1 < read.js')],
   ['pass', bash('npx -y @framer/agent@latest exec -s 1 < preview-only.js')],
   ['pass', bash('npx @framer/agent@latest exec -s 1 -e "await framer.agent.publish({ action: \\"preview\\" })"')],
   ['pass', bash(`npx -y @framer/agent@latest exec -s 1 < "${branchPreview}"`)],
