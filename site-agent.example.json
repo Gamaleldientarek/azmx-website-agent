@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Gamaleldientarek/azmx-website-agent/main/site-agent.schema.json",
+  "site": {
+    "name": "Example website",
+    "production": "https://example.framer.website",
+    "staging": "https://example-staging.framer.app",
+    "finalDomain": "example.com",
+    "defaultLocale": "ar",
+    "locales": [
+      { "code": "ar", "path": "/", "direction": "rtl" },
+      { "code": "en", "path": "/en", "direction": "ltr" }
+    ],
+    "positioning": {
+      "ar": "الوصف المعتمد للشركة بالعربية",
+      "en": "the approved one-line description of the company"
+    }
+  },
+  "framer": {
+    "projectId": "REPLACE_WITH_THE_FRAMER_PROJECT_ID",
+    "projectName": "Example Live",
+    "mainBranch": "main",
+    "publish": "human-only"
+  },
+  "docs": {
+    "handbook": "docs/website/README.md",
+    "siteMap": "docs/website/site-map.md",
+    "tasks": "task.md",
+    "review": "review.md",
+    "history": "docs/history-log.md",
+    "plans": "docs/plans",
+    "backups": "archive/backups",
+    "code": "code",
+    "rules": "CLAUDE.md",
+    "extra": [
+      { "path": "docs/website/newsletter-brevo.md", "about": "How the forms and the newsletter reach the email service" },
+      { "path": "docs/cloud-setup.md", "about": "Running the Framer agent from a cloud session with an API key" }
+    ]
+  }
+}

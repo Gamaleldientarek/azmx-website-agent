@@ -1,0 +1,35 @@
+schema_version: "1.1"
+name: ask-forms
+description: A question about how the site is built is answered from the handbook, with the file cited.
+tags: [ask, smoke]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Where does the newsletter form on this website send its data, and where is that documented? Answer from the repository's documentation and cite the file.
+  max_turns: 12
+  timeout_seconds: 300
+  allowed_tools: [Read, Glob, Grep, Skill, Bash(node:*)]
+graders:
+  - name: knowledge-skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?azmx-site-knowledge"'
+  - name: names-the-relay
+    type: regex
+    target: last_message
+    pattern: '(?i)(cloudflare|worker|relay).*brevo|brevo.*(cloudflare|worker|relay)'
+    flags: s
+    weight: 2
+  - name: cites-the-handbook
+    type: regex
+    target: last_message
+    pattern: 'docs/website/README\.md'
+    weight: 2
+  - name: no-invention
+    type: llm
+    focus: last_message
+    criteria: |
+      PASS if every factual claim about the form (the relay, Brevo, the origin check, the list, the confirmation email, the validation script) appears in the repository's handbook text, and the answer names the file it came from.
+      FAIL if the answer invents an integration, a field or a file that the handbook does not mention, or answers without citing a file.

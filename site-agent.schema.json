@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Gamaleldientarek/azmx-website-agent/site-agent.schema.json",
+  "title": "site-agent.json",
+  "description": "Per-repository configuration read by the azmx-site plugin. Lives at the root of the website repository, next to its documentation. Holds identifiers and paths only; never a key.",
+  "type": "object",
+  "required": ["site", "framer", "docs"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "site": {
+      "type": "object",
+      "required": ["name", "production"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "How the site is referred to in answers, e.g. \"AZM X website\"." },
+        "production": { "type": "string", "format": "uri", "description": "The live site." },
+        "staging": { "type": "string", "format": "uri", "description": "The staging site, if any." },
+        "finalDomain": { "type": "string", "description": "The domain the site will move to, if not switched yet." },
+        "defaultLocale": { "type": "string", "description": "BCP 47 tag of the default language at /, e.g. \"ar\"." },
+        "locales": {
+          "type": "array",
+          "description": "Every language and its path prefix.",
+          "items": {
+            "type": "object",
+            "required": ["code", "path", "direction"],
+            "additionalProperties": false,
+            "properties": {
+              "code": { "type": "string" },
+              "path": { "type": "string", "description": "Path prefix, \"/\" for the default language." },
+              "direction": { "type": "string", "enum": ["rtl", "ltr"] }
+            }
+          }
+        },
+        "positioning": {
+          "type": "object",
+          "description": "The one approved description of the company, per language. Agents use it verbatim and never substitute another.",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "framer": {
+      "type": "object",
+      "required": ["projectId"],
+      "additionalProperties": false,
+      "properties": {
+        "projectId": { "type": "string", "pattern": "^[A-Za-z0-9_-]{6,40}$", "description": "The Framer project id. Not a secret by itself: it grants nothing without a key." },
+        "projectName": { "type": "string" },
+        "mainBranch": { "type": "string", "default": "main" },
+        "publish": {
+          "type": "string",
+          "enum": ["human-only", "allow-with-flag"],
+          "default": "human-only",
+          "description": "human-only: the plugin never publishes to production. allow-with-flag: a production publish is allowed only when AZMX_SITE_ALLOW_PUBLISH=1 is set for that command."
+        }
+      }
+    },
+    "docs": {
+      "type": "object",
+      "required": ["handbook", "tasks", "review"],
+      "additionalProperties": false,
+      "properties": {
+        "handbook": { "type": "string", "description": "Path, relative to the repository root, of the handbook guide (Markdown)." },
+        "siteMap": { "type": "string", "description": "Path of the generated site map (Markdown)." },
+        "tasks": { "type": "string", "description": "Path of the task list." },
+        "review": { "type": "string", "description": "Path of the review log (findings and changes, newest first)." },
+        "history": { "type": "string", "description": "Path of the history log." },
+        "plans": { "type": "string", "description": "Folder of plans and design directions." },
+        "backups": { "type": "string", "description": "Folder where JSON backups of changed Framer nodes are saved before a write." },
+        "code": { "type": "string", "description": "Folder holding copies of the site's code components, overrides and scripts." },
+        "rules": { "type": "string", "description": "The repository's rules file for Claude (usually CLAUDE.md)." },
+        "extra": {
+          "type": "array",
+          "description": "Other documentation worth searching, with a one-line description each.",
+          "items": {
+            "type": "object",
+            "required": ["path", "about"],
+            "additionalProperties": false,
+            "properties": { "path": { "type": "string" }, "about": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}

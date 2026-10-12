@@ -1,0 +1,16 @@
+# Secrets never enter this repository. The Framer key lives in the environment (FRAMER_API_KEY).
+.env
+.env.*
+*.pem
+*.key
+.secrets/
+site-agent.local.json
+
+# Local tooling
+node_modules/
+.DS_Store
+.claude/settings.local.json
+evals/.runs/
+
+# Eval runs (reports and JSON) stay local
+evals/results/

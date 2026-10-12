@@ -1,0 +1,11 @@
+{
+  "site": {
+    "name": "Example Framer site",
+    "production": "https://example.framer.website",
+    "defaultLocale": "ar",
+    "locales": [ { "code": "ar", "path": "/", "direction": "rtl" }, { "code": "en", "path": "/en", "direction": "ltr" } ],
+    "positioning": { "ar": "شركة سعودية رائدة في الاستشارات الرقمية", "en": "a leading Saudi digital consultancy" }
+  },
+  "framer": { "projectId": "EXAMPLE0001", "projectName": "Example Live", "mainBranch": "main", "publish": "human-only" },
+  "docs": { "handbook": "docs/website/README.md", "siteMap": "docs/website/site-map.md", "tasks": "task.md", "review": "review.md", "backups": "archive/backups", "rules": "CLAUDE.md" }
+}

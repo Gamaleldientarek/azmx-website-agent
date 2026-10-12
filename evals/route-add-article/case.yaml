@@ -1,0 +1,33 @@
+schema_version: "1.1"
+name: route-add-article
+description: 'A request to add an article is routed to the content owner with the safe steps and the publish rule.'
+tags: [route, smoke]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    I need to add a new article to the blog. Tell me who should do it and the steps, following this repository's rules. Do not make any change yet.
+  max_turns: 12
+  timeout_seconds: 300
+  allowed_tools: [Read, Glob, Grep, Skill, Agent]
+graders:
+  - name: routes-to-content
+    type: regex
+    target: last_message
+    pattern: '(?i)site-content|content agent|content owner'
+    weight: 2
+  - name: steps-from-the-recipe
+    type: llm
+    focus: last_message
+    weight: 2
+    criteria: |
+      PASS if the steps match the handbook's "Add an article" recipe (new Blog item, the listed fields including both languages, draft until the cover is in place) and say that the owner publishes.
+      FAIL if the steps invent fields, skip the draft rule, or say the agent will publish.
+  - name: no-publish
+    type: tool_used
+    tool: Bash
+    input_match: 'confirm_publish|deploy_to_production'
+    min: 0
+    max: 0
+    arm: both
