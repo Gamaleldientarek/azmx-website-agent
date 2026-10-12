@@ -2,4 +2,4 @@
 # Refuses a commit that adds anything that looks like a credential. Enable once with: git config core.hooksPath .githooks
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-git diff --cached --name-only --diff-filter=ACMR | node "$HERE/scripts/check-secrets.mjs" --stdin
+git diff --cached --name-only --diff-filter=ACMR -z | node "$HERE/scripts/check-secrets.mjs" --stdin0

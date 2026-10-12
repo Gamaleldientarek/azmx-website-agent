@@ -6,11 +6,16 @@ Lessons the review log and the task list recorded while building this site, grou
 
 - A branch can disappear because the owner merged it in the editor. Find what changed by diffing main against the pre-change backup.
 - Branches the session did not create are left untouched and named in the record.
-- Code files are not branched: a change to a code file lands on main immediately and must be reverted separately.
+- A code-file change was found on main after an editor merge; whether code files follow a branch is unproven. Back the file up, write, read it back on the branch and on main, and revert separately if needed.
 - CMS writes (`addItems`, `setAttributes`, `addFields`) bypass branches, so two sessions editing the same project can collide silently. Agree page ownership between parallel sessions.
 - A merge can silently fail: confirm the branch is gone from `getBranches()` and re-read on main in a new run before saying "merged".
 - A proof-of-concept branch merged through the editor before the owner approved it had to be reverted. Proof-of-concept branches are merged by the owner only.
 - A delegated agent only sees the latest message; approvals it claims for other requests are refused. Do approved changes in the main session.
+
+## Site settings
+
+- URL redirects are written through `addRedirects` straight to main (no branch) and go live with the owner's publish; back up `getRedirects()` first. A rule that copies the path (`/old/* → /:1`) can become an open redirect; point old addresses at fixed pages.
+- The owner's Site Settings scripts (tracking, consent, verification tags) are invisible to the API; re-adding them is his step, and the plugin never adds a second copy. The site-wide noindex, the favicon and on-page editing are editor-only too.
 
 ## Writes that look successful and are not
 
@@ -19,7 +24,7 @@ Lessons the review log and the task list recorded while building this site, grou
 - `SET <layer> tag="p"` is accepted but ignored on CMS-bound text; the HTML tag comes from the text style. Create a text style with the wanted tag.
 - A heading tag on CMS-bound text cannot be read back through the serializer; verify in the published HTML.
 - `+TextStylePresetNode` adds five OpenType features and sets the largest breakpoint at 1440 px; null the features with `SET`, but the breakpoint only takes through `textStyle.setAttributes({ breakpoints })`.
-- `metadata.noIndex="true"` works on a page although it is not in the DSL grammar.
+- `metadata.noIndex="true"` works on a page; the current grammar lists it as a page attribute beside `metadata.noIndexSite` (an older note saying it was absent is out of date). The site-wide noindex switch stays editor-only.
 - Stale virtual ids: `SET v:<node>:0:0` can fail with "virtual child no longer exists" even after a fresh read; `node.setText()` works and keeps the preset.
 - A `maxWidth` cap is invisible to a width-only read; read `maxWidth` too when a size change does not take.
 - Negative stack gaps do not render (saved as −8, drawn as 0); overlapping chips need absolute pins.
@@ -38,10 +43,10 @@ Lessons the review log and the task list recorded while building this site, grou
 
 ## Localization
 
-- Changing an Arabic value (a control, a button label, a footer link) clears or creates empty English entries on that source; re-set the English afterwards.
+- Changing an Arabic value on the canvas (a control, a button label, a footer link) moves the node to a new source with no English; re-set the English afterwards. On a CMS field the old English stays and is flagged "needs review": set a changed value, since re-setting an unchanged one leaves the flag.
 - Setting the English of a shared Arabic string renames every node that carries it.
-- Framer localizes only text, alt text and slugs: no per-language aria labels, no per-language link addresses, CMS link fields are not localizable, hidden form inputs get no translation entry.
-- `addItems([{ slug, draft, fieldData }])` accepts `valueByLocale: { <localeId>: { action: "set", value } }` to set the English in the same call. Read locale ids from the project; never hard-code them.
+- Framer localizes text, alt text, slugs and canvas links (the source types are string, formattedText, altText, slug and link): no per-language order, direction or visibility, and no per-language aria labels. CMS link fields are the exception (`"status":"notLocalizable"`). Hidden form inputs get no translation entry.
+- Each string, formattedText and link entry inside `fieldData` accepts `valueByLocale: { <localeId>: { action: "set", value } }` (image entries take `altByLocale`), so `addItems` can set the English in the same call; it is not an item-level key. Read locale ids from the project; never hard-code them.
 - The localization percentage counts every CMS text value, so a large bilingual collection drags it down; marking fields "keep original" is a bulk change that needs the owner's yes.
 - A component's sample texts (variable initial values) add strings to Localization.
 - The canvas renders Arabic only; the English locale, hover states and the cookie banner's compact layout can only be checked on a preview or after a publish.
@@ -61,7 +66,7 @@ Lessons the review log and the task list recorded while building this site, grou
 - The live alt text of a CMS image comes from the image value itself: write `{ type: "image", value: url, alt }`.
 - CMS formatted text accepts tables wrapped in `<figure>`; `setHTML` is not available, so rich text is rebuilt with `+TextBlock`, `+TextBulletList`, `+TextListItem`, `+TextRun`.
 - A hidden form field cannot hold a CMS value (it freezes the first value).
-- A CMS colour field cannot hold a colour style, and a colour cannot be driven from an option or reference field; connecting an option field to a code component's dropdown was done once in the editor, then the cases were written with `convertFromOption`.
+- In the editor, a CMS colour field could not be set to a colour style (a native-only check); the plugin API's types accept a colour style as the value, which is untested here. A colour cannot be driven from an option or reference field; connecting an option field to a code component's dropdown was done once in the editor, then the cases were written with `convertFromOption`.
 
 ## Layout and components
 
@@ -88,7 +93,7 @@ Lessons the review log and the task list recorded while building this site, grou
 ## Performance
 
 - The CDN re-encodes scaled image variants itself, so recompressing uploaded photos saves almost nothing; mobile LCP is held by Framer's hydration, not file sizes.
-- Framer requests image sizes from the layer width (a 720 px layer pulls 1024 px files on phone); the resolution setting is global.
+- Framer requests image sizes from the layer width (a 720 px layer pulls 1024 px files on phone); the per-image Resolution setting is the only native lever and applies to every breakpoint of that image.
 - Lighthouse ignores video downloads; run-to-run noise is large. Measure twice before claiming a gain.
 - Bandwidth is a running total for the billing period; automated live testing counts against it. Routine checks go to previews.
 - The plugin API cannot see custom fonts; a stale `@font-face` record is a Framer-side issue.

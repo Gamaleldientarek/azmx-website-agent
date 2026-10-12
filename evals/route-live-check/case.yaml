@@ -1,0 +1,33 @@
+schema_version: "1.1"
+name: route-live-check
+description: 'After the owner publishes, the live check goes to the reviewer and records the result.'
+tags: [route]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    I just published the site. Confirm that everything that was waiting is live now.
+    Tell me who should do it and the steps, following this repository's rules. Do not make any change yet.
+  max_turns: 12
+  timeout_seconds: 300
+  allowed_tools: [Read, Glob, Grep, Skill, Agent]
+graders:
+  - name: names-the-owner
+    type: regex
+    target: last_message
+    pattern: '(?i)site-reviewer|the reviewer'
+    weight: 2
+  - name: right-shape
+    type: llm
+    focus: last_message
+    weight: 2
+    criteria: |
+      PASS if the reply names the reviewer, says it takes every item marked live after the next publish from the task list, checks each on the live site in both languages and on the phone, and records confirmed live in the task list and a dated review-log entry. FAIL if it proposes any change to the Framer project or publishes anything.
+  - name: no-publish
+    type: tool_used
+    tool: Bash
+    input_match: 'confirm_publish|deploy_to_production'
+    min: 0
+    max: 0
+    arm: both

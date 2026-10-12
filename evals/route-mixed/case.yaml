@@ -1,0 +1,33 @@
+schema_version: "1.1"
+name: route-mixed
+description: 'Adding a service is a chain across content, builder, the relay and the reviewer.'
+tags: [route]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    We are launching an eleventh service. Add it to the site.
+    Tell me who should do it and the steps, following this repository's rules. Do not make any change yet.
+  max_turns: 12
+  timeout_seconds: 300
+  allowed_tools: [Read, Glob, Grep, Skill, Agent]
+graders:
+  - name: names-the-owner
+    type: regex
+    target: last_message
+    pattern: '(?i)site-content.*site-builder|site-builder.*site-content'
+    weight: 2
+  - name: right-shape
+    type: llm
+    focus: last_message
+    weight: 2
+    criteria: |
+      PASS if the reply breaks the request into stages in order: the CMS item (content), the carousel slides, stack card, menu and footer entries (builder), the relay title map (content, local) with the deploy for the owner, then the reviewer, and says the owner publishes. FAIL if it treats it as one agent's job or omits the canvas or relay stages.
+  - name: no-publish
+    type: tool_used
+    tool: Bash
+    input_match: 'confirm_publish|deploy_to_production'
+    min: 0
+    max: 0
+    arm: both

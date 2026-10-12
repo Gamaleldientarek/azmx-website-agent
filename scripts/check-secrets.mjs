@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // Scans files for anything that looks like a credential. Exit 1 when something is found.
 // Usage: node scripts/check-secrets.mjs [path ...]      (default: the git-tracked and staged files of the current repository)
-//        git diff --cached --name-only | node scripts/check-secrets.mjs --stdin
+//        git diff --cached --name-only -z | node scripts/check-secrets.mjs --stdin0   (NUL-separated; survives any file name)
+//        git diff --cached --name-only | node scripts/check-secrets.mjs --stdin      (newline-separated)
+// In the --stdin modes every listed path must exist; a missing one is reported as a failure, never skipped.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
@@ -9,7 +11,10 @@ import { findSecret } from '../hooks/scripts/lib.mjs';
 
 const args = process.argv.slice(2);
 let files = [];
-if (args.includes('--stdin')) {
+const fromStdin = args.includes('--stdin') || args.includes('--stdin0');
+if (args.includes('--stdin0')) {
+  files = fs.readFileSync(0, 'utf8').split('\0').filter(Boolean);
+} else if (args.includes('--stdin')) {
   files = fs.readFileSync(0, 'utf8').split('\n').map(s => s.trim()).filter(Boolean);
 } else if (args.length) {
   for (const a of args) files.push(...walk(a));
@@ -32,7 +37,11 @@ function walk(p) {
 const SKIP = /\.(png|jpe?g|gif|webp|mp4|mov|pdf|woff2?|ttf|otf|zip|ico)$/i;
 let bad = 0;
 for (const f of files) {
-  if (SKIP.test(f) || !fs.existsSync(f) || fs.statSync(f).size > 5_000_000) continue;
+  if (!fs.existsSync(f)) {
+    if (fromStdin) { bad++; console.log(`${f}: listed but not found (a decoding mismatch?); refusing to skip it`); }
+    continue;
+  }
+  if (SKIP.test(f) || fs.statSync(f).size > 5_000_000) continue;
   const text = fs.readFileSync(f, 'utf8');
   const hit = findSecret(text);
   if (hit) { bad++; console.log(`${f}: looks like a ${hit.name} (${hit.sample})`); }

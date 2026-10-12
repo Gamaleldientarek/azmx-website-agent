@@ -21,9 +21,10 @@ Things that only go live with a publish, and lag until then: the installed custo
 
 1. Note the publish time (the owner's words, or the deployment time from the preview URLs).
 2. From the task list, take every item marked "live after the next publish" or "merged to main" and the evidence each review entry promised.
-3. Check on the live site, both languages, desktop and phone: fetch the HTML for texts, counts, titles, descriptions, H1s, scripts; screenshot through `readProject` with a `url` and `?cb=1`; fetch slowly, because the CDN sometimes serves a short placeholder page instead of the page (retry until the full page comes back). Routine checks use previews, not the live site, to save the plan's bandwidth; the live check after a publish is the exception.
+3. Check on the live site, both languages, desktop and phone: fetch the HTML for texts, counts, titles, descriptions, H1s, scripts; screenshot through `scripts/screenshot.js` in `framer-site-ops` (a session, `state.settings = { url, phone: true }`, one run per page) with `?cb=1`; fetch slowly, because the CDN sometimes serves a short placeholder page instead of the page (retry until the full page comes back). If the HTML fetch is refused (a cloud environment without the site's domains), run the layout checks through the screenshots and report every HTML-based check as not run. Routine checks use previews, not the live site, to save the plan's bandwidth; the live check after a publish is the exception.
 4. Judge each item: confirmed live; not live yet (the publish predates the merge); wrong (what differs, with evidence).
 5. Record: the task list gets the status in the owner's wording; the review log gets one dated "Live check after the publish of <date>" section with each item and its evidence. A wrong item becomes a task-list item in section 2 with a recommendation.
+6. When the task list asks for a speed measurement, run it now (PageSpeed mobile and desktop, LCP, page weight) and record the numbers beside the previous ones; run-to-run noise is large and the tool ignores video downloads, so a gain needs two runs before it is claimed.
 
 ## Status wording
 

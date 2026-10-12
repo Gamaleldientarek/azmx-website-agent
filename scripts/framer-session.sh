@@ -13,10 +13,19 @@ if [ "${1:-}" != "--new" ] && [ -f "$CACHE" ]; then
     echo "$SID"; exit 0
   fi
 fi
-OUT="$(npx -y @framer/agent@latest session new "$PROJECT_ID" </dev/null 2>&1 || true)"
-if echo "$OUT" | grep -qi "waiting for authorization"; then
-  echo "Framer is waiting for a browser sign-in, which a cloud session cannot complete. Run scripts/framer-auth.sh with FRAMER_API_KEY set, then retry." >&2; exit 1
+ERR="$(mktemp)"; trap 'rm -f "$ERR"' EXIT
+OUT="$(npx -y @framer/agent@latest session new "$PROJECT_ID" </dev/null 2>"$ERR" || true)"
+# The id is a whole line holding only digits.
+SID="$(printf '%s\n' "$OUT" | grep -xE '[0-9]+' | tail -1 || true)"
+if [ -n "$SID" ]; then echo "$SID" > "$CACHE"; echo "$SID"; exit 0; fi
+ALL="$(cat "$ERR"; printf '%s' "$OUT")"
+if printf '%s' "$ALL" | grep -qi "authorization"; then
+  {
+    echo "Framer needs a sign-in for project $PROJECT_ID."
+    echo "On a laptop: run  npx -y @framer/agent@latest project auth $PROJECT_ID  (it opens the browser; no key needed), then rerun this script."
+    echo "In a cloud session: set FRAMER_API_KEY in the environment and run scripts/framer-auth.sh (see docs/handbook/cloud.md)."
+    printf '%s\n' "$ALL" | grep -i "http" | head -3 || true
+  } >&2
+  exit 1
 fi
-SID="$(echo "$OUT" | grep -oE '[0-9]+' | tail -1 || true)"
-if [ -z "$SID" ]; then echo "Could not open a session. Framer said:" >&2; echo "$OUT" >&2; exit 1; fi
-echo "$SID" > "$CACHE"; echo "$SID"
+echo "Could not open a session. Framer said:" >&2; printf '%s\n' "$ALL" >&2; exit 1

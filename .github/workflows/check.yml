@@ -1,0 +1,26 @@
+name: check
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Manifests are valid JSON
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json','utf8')); JSON.parse(require('fs').readFileSync('.claude-plugin/marketplace.json','utf8')); JSON.parse(require('fs').readFileSync('hooks/hooks.json','utf8')); JSON.parse(require('fs').readFileSync('site-agent.schema.json','utf8')); JSON.parse(require('fs').readFileSync('site-agent.example.json','utf8'))"
+      - name: Scripts parse
+        run: |
+          for f in hooks/scripts/*.mjs scripts/*.mjs; do node --check "$f"; done
+          for f in skills/framer-site-ops/scripts/*.js; do node --input-type=module --check < "$f"; done
+          for f in scripts/*.sh .githooks/pre-commit evals/scaffold.sh evals/*/scaffold.sh; do bash -n "$f"; done
+      - name: Hook guards behave
+        run: node scripts/test-guards.mjs
+      - name: No credentials in the repository
+        run: node scripts/check-secrets.mjs
+      - name: Every referenced plugin file exists
+        run: node scripts/check-references.mjs

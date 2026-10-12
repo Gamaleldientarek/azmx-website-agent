@@ -1,0 +1,33 @@
+schema_version: "1.1"
+name: route-question
+description: 'A how-is-it-built question goes to the guide and is answered from the handbook.'
+tags: [route]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    How does the testimonials slider on the home page pick which quotes it shows?
+    Tell me who should do it and the steps, following this repository's rules. Do not make any change yet.
+  max_turns: 12
+  timeout_seconds: 300
+  allowed_tools: [Read, Glob, Grep, Skill, Agent]
+graders:
+  - name: names-the-owner
+    type: regex
+    target: last_message
+    pattern: '(?i)site-guide|the guide'
+    weight: 2
+  - name: right-shape
+    type: llm
+    focus: last_message
+    weight: 2
+    criteria: |
+      PASS if the reply names the guide as the owner (or answers directly as the guide would) and the answer matches the handbook: the Home testimonials slider shows items from the Testimonials & Awards collection with Type = Testimonial, cited to the handbook or site map. FAIL if it routes to a builder or content agent, proposes a change, or invents a rule the fixture does not state.
+  - name: no-publish
+    type: tool_used
+    tool: Bash
+    input_match: 'confirm_publish|deploy_to_production'
+    min: 0
+    max: 0
+    arm: both

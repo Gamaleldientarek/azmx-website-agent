@@ -13,8 +13,10 @@ if (!site) {
 }
 const getIdx = args.indexOf('--get');
 if (getIdx >= 0) {
-  const value = args[getIdx + 1].split('.').reduce((o, k) => (o == null ? undefined : o[k]), site.config);
-  if (value === undefined) { console.error('Not set: ' + args[getIdx + 1]); process.exit(3); }
+  const key = args[getIdx + 1];
+  if (!key || key.startsWith('--')) { console.error('Usage: node scripts/site-config.mjs --get <a.b.c> [--root <dir>]'); process.exit(2); }
+  const value = key.split('.').reduce((o, k) => (o == null ? undefined : o[k]), site.config);
+  if (value === undefined) { console.error('Not set: ' + key); process.exit(3); }
   process.stdout.write(typeof value === 'string' ? value : JSON.stringify(value));
 } else {
   process.stdout.write(JSON.stringify({ root: site.root, configPath: site.path, ...site.config }, null, 2) + '\n');

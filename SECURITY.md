@@ -5,8 +5,8 @@ This plugin is public so that anyone who installs it can read exactly what it do
 ## What the plugin holds
 
 - Procedures, rules, prompts and small helper scripts. All of it is in this repository.
-- No key, no token, no account id, no tracking id. The `scripts/check-secrets.mjs` scan runs on every commit through the pre-commit hook in `.githooks/`, and a `PreToolUse` hook refuses to write anything that looks like a credential into a file during a session.
-- No content from the website repository. The handbook, task list and review log stay in that private repository. The plugin reads them at run time, on the machine where both are installed, and never copies them anywhere.
+- No key, no token, no account id, no tracking id. The `scripts/check-secrets.mjs` scan runs on every commit once a clone has enabled the hook (`git config core.hooksPath .githooks`, one command, per clone) and on every push and pull request in GitHub Actions (`.github/workflows/check.yml`), and a `PreToolUse` hook refuses to write anything that looks like a credential into a file during a session.
+- No content from the website repository. The handbook, task list and review log stay in that private repository. The plugin reads them at run time, on the machine where both are installed, and never copies them anywhere. The one exception is the eval fixture (`evals/fixtures/site/`), a small repository modelled on the real one's layout and naming, with invented numbers and no hostnames, ids, secrets or copy.
 
 ## How access to Framer works
 
@@ -19,9 +19,9 @@ This plugin is public so that anyone who installs it can read exactly what it do
 
 | Never | Enforced by |
 |---|---|
-| Publish the live site | `hooks/scripts/guard-publish.mjs`: a `PreToolUse` hook on every shell command. It blocks `framer.agent.publish` and `confirm_publish` unless the call is a branch preview (`action: "preview"`), or the site config says `allow-with-flag` **and** `AZMX_SITE_ALLOW_PUBLISH=1` is set for that command. The agents' instructions say the same thing, but the hook does not depend on them. |
+| Publish the live site | `hooks/scripts/guard-publish.mjs`: a `PreToolUse` hook on every shell command. It blocks `confirm_publish`, `deploy_to_production`, `framer.deploy` and any CLI publish form, in the command text, in scripts fed to the Framer agent from files, and in local scripts the command runs (one level at a time, up to four). It fails closed when an exec's code is out of sight (an unreadable file, a pipe from anything but `cat <file>`, command substitution) and when `site-agent.json` cannot be read. A bare `{ action: "preview" }` passes (it publishes nothing); so does the sanctioned branch-preview script, which refuses to run on main. The exceptions: the site config says `allow-with-flag` **and** `AZMX_SITE_ALLOW_PUBLISH=1` is set for that command. It is a guard against mistakes, not a sandbox: an installed package script (`npm run …`) or an encoded payload is outside its sight, which is why the agents' instructions and the key policy are separate layers. `scripts/test-guards.mjs` holds the cases it is checked against. |
 | Write on Framer's main without a backup | The `framer-site-ops` skill and the builder and content agents: serialize the nodes to `archive/backups/` first, write on a branch, read back, then merge. |
-| Store or print a key | `guard-secrets.mjs` (writes), `check-secrets.mjs` (commits), and the auth script's hidden output. |
+| Store or print a key | `guard-secrets.mjs` (writes), `check-secrets.mjs` (commits, once the hook is enabled, and CI), and the auth script's hidden output. |
 | Delete or hide the site's sections, videos or assets without a yes | The `azmx-site-rules` skill; the organizer returns such requests as decisions for the owner. |
 | Send anything outside the machine except to Framer and GitHub | The plugin has no MCP server and no network code of its own. |
 

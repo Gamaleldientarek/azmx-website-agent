@@ -14,7 +14,7 @@ Finished work belongs on main. If a branch is open, find out why before touching
 
 ## 2. Read the live state, not the memory
 
-The owner edits in Framer directly. Before changing a node, read it now: `framer.agent.serialize` or `getNode` for the nodes, `readProject` for a page. Keep his wording and layout changes. Never write from an older snapshot, a backup or a transcript.
+The owner edits in Framer directly. Before changing a node, read it now: `framer.agent.serialize`/`serializeNodes` or `getNode` with `{ pagePath }` for the nodes (serialize the page node with a `depth` to read a whole page). `readProject` only takes screenshots, guides and font searches: use it for a picture of the page, not its state. Keep his wording and layout changes. Never write from an older snapshot, a backup or a transcript.
 
 ## 3. Back up
 
@@ -22,11 +22,11 @@ Serialize the nodes that will change and save them as JSON in the backups folder
 
 ## 4. Write on a branch
 
-A write on main creates a branch automatically; rename it after the task (`renameBranch`). Keep writes small: one `SET` per `applyChanges` call for multi-line text on breakpoint replicas, and check `result.errors` after every call, not only exceptions.
+A canvas write on main creates a branch when auto-branching is on (it has on this project every time; the branch check is the proof); rename it after the task (`renameBranch`). Keep writes small: one `SET` per `applyChanges` call for multi-line text on breakpoint replicas, and check `result.errors` after every call, not only exceptions.
 
 ## 5. Read back
 
-Serialize the same nodes on the branch and compare with the intent: text, breakpoints (desktop, small desktop, tablet, phone), both languages. For visual changes, take screenshots with `readProject` (`type: "screenshot"`, a phone viewport of 390×844 for the phone). A branch preview (`framer.agent.publish({ action: "preview" })`) lets you screenshot the real site code without touching the live site.
+Serialize the same nodes on the branch and compare with the intent: text, breakpoints (desktop, small desktop, tablet, phone), both languages. For visual changes, take screenshots with `readProject` (`type: "screenshot"`, a phone viewport of 390×844 for the phone). A branch preview lets you screenshot the real site code without touching the live site: `framer.agent.publish({ action: "preview" })` only returns readiness and a `confirmationHash`; `confirm_publish` with that hash, run on a branch, builds the preview. Use `skills/framer-site-ops/scripts/branch-preview.js`, which does both and refuses to run on main.
 
 ## 6. Merge to main
 

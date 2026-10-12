@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 // Checks the environment for working on the site. Never prints a key.
-// Usage: node scripts/doctor.mjs [--online]     (--online also opens a Framer session and reads the active branch)
+// Usage: node "$CLAUDE_PLUGIN_ROOT/scripts/doctor.mjs" [--online]   from the website repository (it finds site-agent.json by walking up
+//        from the working directory, or from CLAUDE_PROJECT_DIR). --online also signs in when a key is present, opens a session and reads the branch.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync, spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { findSiteConfig } from '../hooks/scripts/lib.mjs';
 
 const online = process.argv.includes('--online');
@@ -34,11 +36,23 @@ if (!site) {
 (process.env.FRAMER_API_KEY ? ok : warn)('FRAMER_API_KEY', process.env.FRAMER_API_KEY ? 'set (value hidden)' : 'not set; fine on a Mac with browser sign-in, required in a cloud environment');
 const skill = path.join(process.env.HOME || '', '.claude', 'skills', 'framer', 'SKILL.md');
 (fs.existsSync(skill) ? ok : warn)('framer skill', fs.existsSync(skill) ? skill : 'not installed yet; scripts/framer-auth.sh runs `npx @framer/agent@latest setup`');
+try {
+  const pluginRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const top = execSync('git rev-parse --show-toplevel', { cwd: pluginRoot, stdio: 'pipe', encoding: 'utf8' }).trim();
+  if (top === pluginRoot) {
+    let hp = ''; try { hp = execSync('git config --get core.hooksPath', { cwd: pluginRoot, stdio: 'pipe', encoding: 'utf8' }).trim(); } catch {}
+    (hp === '.githooks' ? ok : warn)('plugin pre-commit', hp === '.githooks' ? 'secrets scan enabled' : 'not enabled in this clone: git config core.hooksPath .githooks');
+  }
+} catch {}
 const allow = process.env.AZMX_SITE_ALLOW_PUBLISH === '1';
 (allow ? warn : ok)('publish guard', allow ? 'AZMX_SITE_ALLOW_PUBLISH=1 is set in this shell: a production publish would pass the hook' : 'armed: production publish blocked, previews allowed');
 
 if (online && site) {
-  const here = path.dirname(new URL(import.meta.url).pathname);
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  if (process.env.FRAMER_API_KEY) {
+    const a = spawnSync('bash', [path.join(here, 'framer-auth.sh')], { encoding: 'utf8' });
+    (a.status === 0 ? ok : warn)('framer sign-in', (a.stdout || a.stderr || '').trim().split('\n')[0] || 'ran');
+  }
   const s = spawnSync('bash', [path.join(here, 'framer-session.sh')], { encoding: 'utf8' });
   if (s.status !== 0) fail('framer session', (s.stderr || s.stdout || '').trim().split('\n').pop());
   else {

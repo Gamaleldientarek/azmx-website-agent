@@ -43,7 +43,7 @@ Paths below are the defaults; `node "${CLAUDE_PLUGIN_ROOT}/scripts/site-config.m
 4. For "why", read the review log entry that names the change: it holds the reasoning, the backup and the evidence.
 5. For anything about a live URL (title, description, H1 count, locale), read the crawl data before guessing; refresh it when the snapshot date is old (the handbook states its snapshot date at the top).
 
-Facts that live outside the repository: tracking ids, Brevo list and template numbers, the relay hostname and secrets, editor-only settings (form destinations, header scroll triggers, image resolution). Say so when a question needs one.
+Facts that live outside the repository: tracking ids, Brevo list and template numbers, the relay hostname and secrets, editor-only settings (form destinations and after-submit redirects, header scroll triggers, image resolution, a form input's CMS value connection, the site-wide noindex, the favicon, on-page editing, deleting a collection, and anything the task list's section 1 › "Quick steps in Framer" lists). Say so when a question needs one.
 
 ## Reading paths by role
 

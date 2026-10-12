@@ -16,7 +16,7 @@ Dark hero, Vision and Mission, Values, Team (CMS: People), Accreditations, Ecosy
 Collections: Blog (11), Services (10), People (9), Careers (5), Testimonials & Awards (5), Glossary (1,080). Every list's filter and sort is in the site map.
 
 ## 4. Forms
-The newsletter form on every page and the contact forms post through a Cloudflare Worker relay (`code/brevo-relay`) to Brevo. The Worker checks the origin, adds the contact to list 3 and sends the confirmation email. Validation messages are set by the site script `data-azmx="form-messages"` in the body-end custom code slot.
+The newsletter form on every page and the contact forms post through a Cloudflare Worker relay (`code/forms-relay`) to Brevo. The Worker checks the origin, adds the contact to the newsletter list and sends the confirmation email. Validation messages are set by the site script `data-azmx="form-messages"` in the body-end custom code slot.
 
 ## 5. How-to recipes
 ### Add an article
