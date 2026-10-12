@@ -3,14 +3,14 @@
   "owner": { "name": "Gamal Eldien", "url": "https://gamaleldien.com" },
   "metadata": {
     "description": "Plugins for working on the AZM X website (Framer) with Claude Code.",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "plugins": [
     {
       "name": "azmx-site",
       "source": "./",
       "description": "The AZM X website's own agent: ask how anything is built, get guided through a change, make the change through the Framer agent safely, or let the organizer route the request.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": { "name": "Gamal Eldien" },
       "category": "productivity",
       "keywords": ["framer", "website", "azmx", "arabic", "cms"]

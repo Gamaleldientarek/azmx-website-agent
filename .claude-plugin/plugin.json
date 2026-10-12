@@ -1,6 +1,6 @@
 {
   "name": "azmx-site",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The AZM X website's own agent for Claude Code: answers how the Framer site is built from its documentation, guides a change step by step, makes the change through the Framer agent on a branch with a backup, and routes any request to the right owner. Public engine, private facts: it reads the website repository's handbook at run time and never stores a key.",
   "author": { "name": "Gamal Eldien", "url": "https://gamaleldien.com" },
   "homepage": "https://github.com/Gamaleldientarek/azmx-website-agent",
