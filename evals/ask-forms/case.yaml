@@ -19,8 +19,8 @@ graders:
   - name: names-the-relay
     type: regex
     target: last_message
-    pattern: '(?i)(cloudflare|worker|relay).*brevo|brevo.*(cloudflare|worker|relay)'
-    flags: s
+    pattern: '(cloudflare|worker|relay).*brevo|brevo.*(cloudflare|worker|relay)'
+    flags: si
     weight: 2
   - name: cites-the-handbook
     type: regex

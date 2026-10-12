@@ -15,7 +15,8 @@ graders:
   - name: routes-to-content
     type: regex
     target: last_message
-    pattern: '(?i)site-content|content agent|content owner'
+    pattern: 'site-content|content agent|content owner'
+    flags: i
     weight: 2
   - name: steps-from-the-recipe
     type: llm

@@ -16,7 +16,8 @@ graders:
   - name: names-the-owner
     type: regex
     target: last_message
-    pattern: '(?i)site-content.*site-builder|site-builder.*site-content'
+    pattern: 'site-content.*site-builder|site-builder.*site-content'
+    flags: i
     weight: 2
   - name: right-shape
     type: llm
