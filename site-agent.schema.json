@@ -67,6 +67,7 @@
         "history": { "type": "string", "description": "Path of the history log." },
         "plans": { "type": "string", "description": "Folder of plans and design directions." },
         "backups": { "type": "string", "description": "Folder where JSON backups of changed Framer nodes are saved before a write." },
+        "reportSkill": { "type": "string", "description": "Folder of the website repository's report skill; its references/decisions.md holds the owner's approved and rejected report decisions. Default: .claude/skills/azmx-report." },
         "code": { "type": "string", "description": "Folder holding copies of the site's code components, overrides and scripts." },
         "rules": { "type": "string", "description": "The repository's rules file for Claude (usually CLAUDE.md)." },
         "extra": {
