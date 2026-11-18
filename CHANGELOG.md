@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 (18 November 2026)
+
+New skill `azmx-report-website`: the method for report pages (intake, research, build order, connect, checklist, hand-over) and the Framer lessons from the first two reports. It loads the website repository's own report skill, whose decisions file holds what the owner approved and rejected; no client facts are stored in the plugin.
+
 ## 0.1.1 (12 October 2026)
 
 Review round: 62 confirmed findings fixed (hooks fail closed and never emit a blanket allow, wrapper and file-fed scripts scanned, API claims corrected, routing table split, sessions obtained before exec). Publish guard refinements from first real use: inputs judged per shell segment, `/dev/null` ignored, quoted strings blanked before the pipe check, a cat-pipe counts only when it feeds the exec. Ten routing eval cases, regex graders use the flags field, guard test suite (43 cases) and CI.

@@ -61,6 +61,7 @@ Knowledge that loads itself when a task matches:
 - `framer-site-ops`: the safe method with the Framer agent (session, branch, backup, write, read back, merge, record), the reusable exec scripts, the API cheat sheet, the procedures used on this site, and every gotcha the record holds.
 - `azmx-site-rules`: the owner's standing rules (publishing is his, template sections stay, dark heroes, no stretching, native first, references before a new section) and the Arabic writing rules.
 - [`azmx-site-release`](skills/azmx-site-release/SKILL.md): readiness, the pre-publish list, the live check, the status wording.
+- [`azmx-report-website`](skills/azmx-report-website/SKILL.md): report pages (reading page and download page): the order from intake to hand-over, the checklist and the lessons; the owner's approved and rejected decisions stay in the website repository's report skill.
 
 ## Safety rails the code enforces
 
